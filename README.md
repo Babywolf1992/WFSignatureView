@@ -8,3 +8,15 @@ WFSignatureView是swift语言编写，基于OpenGL框架实现的一个手写签
 ### 使用：
 
 直接将WFSignatureView作为视图调用addSubView即可，需要注意，其控制器需要继承GLKViewController。
+
+
+
+### Screenshot
+
+图一：
+
+![](https://github.com/Babywolf1992/WFSignatureView/blob/master/image/IMG_2048.jpg)
+
+图二：
+
+![](https://github.com/Babywolf1992/WFSignatureView/blob/master/image/IMG_2049.jpg)
