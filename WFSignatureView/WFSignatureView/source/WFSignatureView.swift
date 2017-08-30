@@ -339,7 +339,6 @@ class WFSignatureView: GLKView {
         glBindBuffer(GLenum(GL_ARRAY_BUFFER), vertexBuffer);
         glBufferData(GLenum(GL_ARRAY_BUFFER), MemoryLayout<WFSignaturePoint>.size * maxLength, signatureVertexData, GLenum(GL_DYNAMIC_DRAW));
         self.bindShaderAttributes();
-        print("size:\(MemoryLayout<WFSignaturePoint>.size * maxLength)")
         
         glGenVertexArraysOES(1, &dotsArray);
         glBindVertexArrayOES(dotsArray);
