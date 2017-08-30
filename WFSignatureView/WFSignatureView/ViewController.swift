@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import GLKit
 
-class ViewController: UIViewController {
+class ViewController: GLKViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

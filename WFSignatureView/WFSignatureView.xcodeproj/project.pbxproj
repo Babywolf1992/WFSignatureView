@@ -14,6 +14,7 @@
 		9E7A53591F566EAA00D4FAFB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9E7A53571F566EAA00D4FAFB /* LaunchScreen.storyboard */; };
 		9E7A53641F566EAA00D4FAFB /* WFSignatureViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7A53631F566EAA00D4FAFB /* WFSignatureViewTests.swift */; };
 		9E7A536F1F566EAA00D4FAFB /* WFSignatureViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7A536E1F566EAA00D4FAFB /* WFSignatureViewUITests.swift */; };
+		9E7A537E1F566F6300D4FAFB /* WFSignatureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7A537D1F566F6300D4FAFB /* WFSignatureView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		9E7A536A1F566EAA00D4FAFB /* WFSignatureViewUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WFSignatureViewUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E7A536E1F566EAA00D4FAFB /* WFSignatureViewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WFSignatureViewUITests.swift; sourceTree = "<group>"; };
 		9E7A53701F566EAA00D4FAFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9E7A537D1F566F6300D4FAFB /* WFSignatureView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WFSignatureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 		9E7A534D1F566EAA00D4FAFB /* WFSignatureView */ = {
 			isa = PBXGroup;
 			children = (
+				9E7A537C1F566F5100D4FAFB /* source */,
 				9E7A534E1F566EAA00D4FAFB /* AppDelegate.swift */,
 				9E7A53501F566EAA00D4FAFB /* ViewController.swift */,
 				9E7A53521F566EAA00D4FAFB /* Main.storyboard */,
@@ -123,6 +126,14 @@
 				9E7A53701F566EAA00D4FAFB /* Info.plist */,
 			);
 			path = WFSignatureViewUITests;
+			sourceTree = "<group>";
+		};
+		9E7A537C1F566F5100D4FAFB /* source */ = {
+			isa = PBXGroup;
+			children = (
+				9E7A537D1F566F6300D4FAFB /* WFSignatureView.swift */,
+			);
+			path = source;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -264,6 +275,7 @@
 			files = (
 				9E7A53511F566EAA00D4FAFB /* ViewController.swift in Sources */,
 				9E7A534F1F566EAA00D4FAFB /* AppDelegate.swift in Sources */,
+				9E7A537E1F566F6300D4FAFB /* WFSignatureView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
