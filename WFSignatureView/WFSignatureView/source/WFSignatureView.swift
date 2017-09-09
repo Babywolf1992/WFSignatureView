@@ -32,13 +32,18 @@ public typealias WFSignaturePoint = _WFSignaturePoint
 
 let maxLength = MAXIMUM_VERTECES
 
-func addVertex( length : inout uint, v : UnsafeRawPointer) {
-    if Int(length) >= maxLength {
+func addVertex( length : inout uint, pointsArray : Array<NSNumber>, v : UnsafeRawPointer) {
+    var sum = 0;
+    for num : NSNumber in pointsArray {
+        sum += num.intValue;
+    }
+    let len = Int(length) + sum;
+    if len >= maxLength {
         return;
     }
     var data : UnsafeMutableRawPointer
     data = glMapBufferOES(UInt32(GL_ARRAY_BUFFER), UInt32(GL_WRITE_ONLY_OES))
-    data = data + MemoryLayout<WFSignaturePoint>.size * Int(length)
+    data = data + MemoryLayout<WFSignaturePoint>.size * len
     memcpy(data, v, MemoryLayout<WFSignaturePoint>.size)
     glUnmapBufferOES(GLenum(GL_ARRAY_BUFFER));
     length += 1
@@ -67,6 +72,7 @@ func perpendicular(p1 : WFSignaturePoint, p2 : WFSignaturePoint) -> GLKVector3 {
 }
 
 func viewPointToGL(viewPoint : CGPoint, bounds : CGRect, color : GLKVector3) -> WFSignaturePoint {
+    print(color.v);
     return WFSignaturePoint.init(vertex: GLKVector3.init(v: (Float(viewPoint.x / bounds.size.width * 2.0) - 1, (Float((viewPoint.y / bounds.size.height) * 2.0) - 1) * -1, 0)), color: color);
 }
 
@@ -103,6 +109,10 @@ class WFSignatureView: GLKView {
     var previousMidPoint : CGPoint?
     var previousVertex : WFSignaturePoint?
     var currentVelocity : WFSignaturePoint?
+    
+    private var pointsArray : Array<NSNumber> = Array.init();
+    private var penColor : GLKVector3 = GLKVector3.init(v: (0, 0, 0))
+    private var currentPath : Int = 0;
     
     required init?(coder aDecoder: NSCoder) {
         self.hasSignature = true;
@@ -166,9 +176,15 @@ class WFSignatureView: GLKView {
         
         effect?.prepareToDraw();
         
-        if length > 2 {
+        var len = 0;
+        for num in pointsArray {
+            len += num.intValue;
+        }
+        len += Int(length);
+        
+        if len > 2 {
             glBindVertexArrayOES(vertexArray);
-            glDrawArrays(GLenum(GL_TRIANGLE_STRIP), 0, GLsizei(length));
+            glDrawArrays(GLenum(GL_TRIANGLE_STRIP), 0, GLsizei(len));
         }
         
         if dotsLength > 0 {
@@ -180,6 +196,7 @@ class WFSignatureView: GLKView {
     func erase() {
         length = 0;
         dotsLength = 0;
+        pointsArray.removeAll();
         self.hasSignature = false;
         
         self.setNeedsDisplay();
@@ -192,12 +209,12 @@ class WFSignatureView: GLKView {
         if t.state == UIGestureRecognizerState.recognized {
             glBindBuffer(GLenum(GL_ARRAY_BUFFER), dotsBuffer);
             
-            var touchPoint : WFSignaturePoint = viewPointToGL(viewPoint: l, bounds: self.bounds, color: GLKVector3.init(v: (1, 1, 1)));
-            addVertex(length: &dotsLength, v: &touchPoint);
+            var touchPoint : WFSignaturePoint = viewPointToGL(viewPoint: l, bounds: self.bounds, color: self.penColor);
+            addVertex(length: &dotsLength, pointsArray: pointsArray, v: &touchPoint);
             
             var centerPoint = touchPoint;
             centerPoint.color = StrokeColor;
-            addVertex(length: &dotsLength, v: &centerPoint);
+            addVertex(length: &dotsLength, pointsArray: pointsArray, v: &centerPoint);
             
             let radius = GLKVector2.init(v: (clamp(min: 0.00001, max: 0.02, value: penThickness * generateRandom(from: 0.5, to: 1.5)), clamp(min: 0.00001, max: 0.02, value: penThickness * generateRandom(from: 0.5, to: 1.5))));
             let velocityRadius = radius;
@@ -208,13 +225,13 @@ class WFSignatureView: GLKView {
                 let x = p.vertex.x + velocityRadius.x * cosf(angle);
                 let y = p.vertex.y + velocityRadius.y * sinf(angle);
                 var point : WFSignaturePoint = WFSignaturePoint.init(vertex: GLKVector3.init(v: (x, y, p.vertex.z)), color: p.color);
-                addVertex(length: &dotsLength, v: &point);
-                addVertex(length: &dotsLength, v: &centerPoint);
+                addVertex(length: &dotsLength, pointsArray: pointsArray, v: &point);
+                addVertex(length: &dotsLength, pointsArray: pointsArray, v: &centerPoint);
                 
                 angle += Float(M_PI * 2.0 / Double(WFSignatureView.segments));
             }
             
-            addVertex(length: &dotsLength, v: &touchPoint);
+            addVertex(length: &dotsLength, pointsArray: pointsArray, v: &touchPoint);
             glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0);
         }
         self.setNeedsDisplay();
@@ -250,14 +267,15 @@ class WFSignatureView: GLKView {
             previousPoint = l;
             previousMidPoint = l;
             
-            var startPoint = viewPointToGL(viewPoint: l, bounds: self.bounds, color: GLKVector3.init(v: (1, 1, 1)));
+            var startPoint = viewPointToGL(viewPoint: l, bounds: self.bounds, color: self.penColor);
             previousVertex = startPoint;
             previousThickness = penThickness;
             
-            addVertex(length: &length, v: &startPoint);
-            addVertex(length: &length, v: &previousVertex!);
+            addVertex(length: &length, pointsArray: pointsArray, v: &startPoint);
+            addVertex(length: &length, pointsArray: pointsArray, v: &previousVertex!);
             
             self.hasSignature = true;
+            self.currentPath = pointsArray.count;
         }else if p.state == UIGestureRecognizerState.changed {
             let mid = CGPoint.init(x: (l.x + (previousPoint?.x)!) / 2.0, y: (l.y + (previousPoint?.y)!) / 2.0);
             if distance > Float(QUADRATIC_DISTANCE_TOLERANCE) {
@@ -269,12 +287,12 @@ class WFSignatureView: GLKView {
                 for index in 0 ... (segmts-1) {
                     penThickness = startPenThickness + ((endPenThickness - startPenThickness) / Float(segmts)) * Float(index);
                     let quadPoint = QuadraticPointInCurve(start: previousMidPoint!, end: mid, controlPoint: previousPoint!, percent: Float(index)/Float(segmts));
-                    let wfv = viewPointToGL(viewPoint: quadPoint, bounds: self.bounds, color: StrokeColor);
+                    let wfv = viewPointToGL(viewPoint: quadPoint, bounds: self.bounds, color: self.penColor);
                     self.addTriangleStripPointsForPrevious(previous: previousVertex!, next: wfv)
                     previousVertex = wfv;
                 }
             } else if distance > 1.0 {
-                let wfv = viewPointToGL(viewPoint: l, bounds: self.bounds, color: StrokeColor);
+                let wfv = viewPointToGL(viewPoint: l, bounds: self.bounds, color: self.penColor);
                 self.addTriangleStripPointsForPrevious(previous: previousVertex!, next: wfv);
                 previousVertex = wfv;
                 previousThickness = penThickness;
@@ -282,10 +300,12 @@ class WFSignatureView: GLKView {
             previousPoint = l;
             previousMidPoint = mid;
         } else if p.state == UIGestureRecognizerState.ended || p.state == UIGestureRecognizerState.cancelled {
-            var wfv = viewPointToGL(viewPoint: l, bounds: self.bounds, color: GLKVector3.init(v: (1, 1, 1)));
-            addVertex(length: &length, v: &wfv);
+            var wfv = viewPointToGL(viewPoint: l, bounds: self.bounds, color: self.penColor);
+            addVertex(length: &length, pointsArray: pointsArray, v: &wfv);
             previousVertex = wfv;
-            addVertex(length: &length, v: &previousVertex!);
+            addVertex(length: &length, pointsArray: pointsArray, v: &previousVertex!);
+            pointsArray.append(NSNumber.init(value: Int(length)))
+            length = 0;
         }
         self.setNeedsDisplay();
     }
@@ -293,6 +313,12 @@ class WFSignatureView: GLKView {
     func setStrokeColor(strokeColor : UIColor) {
         self.strokeColor = strokeColor;
         self.updateStrokeColor();
+    }
+    
+    func setPenColor(color : UIColor) {
+        var red : CGFloat = 0, green : CGFloat = 0, blue : CGFloat = 0, alpha : CGFloat = 0;
+        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha);
+        self.penColor = GLKVector3.init(v: (Float(red), Float(green), Float(blue)));
     }
     
     func updateStrokeColor() {
@@ -323,13 +349,16 @@ class WFSignatureView: GLKView {
     
     func bindShaderAttributes() {
         glEnableVertexAttribArray(GLuint(GLKVertexAttrib.position.rawValue));
-        glVertexAttribPointer(GLuint(GLKVertexAttrib.position.rawValue), 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(MemoryLayout<WFSignaturePoint>.size), nil);
+        glVertexAttribPointer(GLuint(GLKVertexAttrib.position.rawValue), 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(MemoryLayout<WFSignaturePoint>.size), UnsafeRawPointer.init(bitPattern: 0));
+        glEnableVertexAttribArray(GLuint(GLKVertexAttrib.color.rawValue));
+        glVertexAttribPointer(GLuint(GLKVertexAttrib.color.rawValue), 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), GLsizei(6*MemoryLayout<GLfloat>.size), UnsafeRawPointer.init(bitPattern: 12));
     }
     
     func setupGL() {
         EAGLContext.setCurrent(glContext);
         effect = GLKBaseEffect.init();
         self.updateStrokeColor();
+        
         glDisable(GLenum(GL_DEPTH_TEST));
         
         glGenVertexArraysOES(1, &vertexArray);
@@ -376,8 +405,8 @@ class WFSignatureView: GLKView {
             difX = difX * ratio;
             difY = difY * ratio;
             
-            var stripPoint = WFSignaturePoint.init(vertex: GLKVector3.init(v: (p1.x + difX, p1.y + difY, 0.0)), color: StrokeColor);
-            addVertex(length: &length, v: &stripPoint);
+            var stripPoint = WFSignaturePoint.init(vertex: GLKVector3.init(v: (p1.x + difX, p1.y + difY, 0.0)), color: self.penColor);
+            addVertex(length: &length, pointsArray: pointsArray, v: &stripPoint);
             toTravel *= -1;
         }
     }
@@ -389,5 +418,7 @@ class WFSignatureView: GLKView {
         
         glDeleteVertexArraysOES(1, &dotsArray);
         glDeleteBuffers(1, &dotsBuffer);
+        
+        effect = nil;
     }
 }
