@@ -310,12 +310,12 @@ class WFSignatureView: GLKView {
         self.setNeedsDisplay();
     }
     
-    func setStrokeColor(strokeColor : UIColor) {
+    public func setStrokeColor(strokeColor : UIColor) {
         self.strokeColor = strokeColor;
         self.updateStrokeColor();
     }
     
-    func setPenColor(color : UIColor) {
+    public func setPenColor(color : UIColor) {
         var red : CGFloat = 0, green : CGFloat = 0, blue : CGFloat = 0, alpha : CGFloat = 0;
         color.getRed(&red, green: &green, blue: &blue, alpha: &alpha);
         self.penColor = GLKVector3.init(v: (Float(red), Float(green), Float(blue)));
