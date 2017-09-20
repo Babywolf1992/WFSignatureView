@@ -321,6 +321,11 @@ class WFSignatureView: GLKView {
         self.penColor = GLKVector3.init(v: (Float(red), Float(green), Float(blue)));
     }
     
+    public func remove() {
+        pointsArray.removeLast();
+        self .setNeedsDisplay();
+    }
+    
     func updateStrokeColor() {
         var red : CGFloat = 0, green : CGFloat = 0, blue : CGFloat = 0, alpha : CGFloat = 0, white : CGFloat = 1;
         if (effect != nil) && (self.strokeColor != nil) && self.strokeColor!.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {

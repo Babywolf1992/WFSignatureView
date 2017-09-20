@@ -45,6 +45,14 @@ class ViewController: GLKViewController {
             btnView.addSubview(btn);
         }
         
+        let removeBtn = UIButton.init(frame: CGRect.init(x: self.view.frame.size.width-80, y: 40, width: 60, height: 20));
+        self.view.addSubview(removeBtn);
+        removeBtn.setTitle("retraction", for: UIControlState.normal)
+        removeBtn.setTitle("retraction", for: UIControlState.highlighted)
+        removeBtn.setTitleColor(UIColor.black, for: UIControlState.normal)
+        removeBtn.setTitleColor(UIColor.black, for: UIControlState.highlighted)
+        removeBtn.titleLabel?.font = UIFont.systemFont(ofSize: 13)
+        removeBtn.addTarget(self, action: #selector(self.retractionAction(sender:)), for: UIControlEvents.touchUpInside)
     }
     
     func btnAction(sender : UIButton) {
@@ -61,6 +69,11 @@ class ViewController: GLKViewController {
         default:
             view.setPenColor(color: UIColor.black);
         }
+    }
+    
+    func retractionAction(sender : UIButton) {
+        let view : WFSignatureView = self.view.viewWithTag(1000) as! WFSignatureView;
+        view.remove();
     }
 
     override func didReceiveMemoryWarning() {
