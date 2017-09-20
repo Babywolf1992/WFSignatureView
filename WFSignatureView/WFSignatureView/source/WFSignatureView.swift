@@ -72,7 +72,6 @@ func perpendicular(p1 : WFSignaturePoint, p2 : WFSignaturePoint) -> GLKVector3 {
 }
 
 func viewPointToGL(viewPoint : CGPoint, bounds : CGRect, color : GLKVector3) -> WFSignaturePoint {
-    print(color.v);
     return WFSignaturePoint.init(vertex: GLKVector3.init(v: (Float(viewPoint.x / bounds.size.width * 2.0) - 1, (Float((viewPoint.y / bounds.size.height) * 2.0) - 1) * -1, 0)), color: color);
 }
 
@@ -310,22 +309,6 @@ class WFSignatureView: GLKView {
         self.setNeedsDisplay();
     }
     
-    public func setStrokeColor(strokeColor : UIColor) {
-        self.strokeColor = strokeColor;
-        self.updateStrokeColor();
-    }
-    
-    public func setPenColor(color : UIColor) {
-        var red : CGFloat = 0, green : CGFloat = 0, blue : CGFloat = 0, alpha : CGFloat = 0;
-        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha);
-        self.penColor = GLKVector3.init(v: (Float(red), Float(green), Float(blue)));
-    }
-    
-    public func remove() {
-        pointsArray.removeLast();
-        self .setNeedsDisplay();
-    }
-    
     func updateStrokeColor() {
         var red : CGFloat = 0, green : CGFloat = 0, blue : CGFloat = 0, alpha : CGFloat = 0, white : CGFloat = 1;
         if (effect != nil) && (self.strokeColor != nil) && self.strokeColor!.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
@@ -425,5 +408,22 @@ class WFSignatureView: GLKView {
         glDeleteBuffers(1, &dotsBuffer);
         
         effect = nil;
+    }
+    
+    /**
+     *设置笔触颜色
+     */
+    public func setPenColor(color : UIColor) {
+        var red : CGFloat = 0, green : CGFloat = 0, blue : CGFloat = 0, alpha : CGFloat = 0;
+        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha);
+        self.penColor = GLKVector3.init(v: (Float(red), Float(green), Float(blue)));
+    }
+    
+    /**
+     *撤回最后一划
+     */
+    public func remove() {
+        pointsArray.removeLast();
+        self .setNeedsDisplay();
     }
 }
