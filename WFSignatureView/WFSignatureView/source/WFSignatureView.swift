@@ -423,6 +423,9 @@ class WFSignatureView: GLKView {
      *撤回最后一划
      */
     public func remove() {
+        if pointsArray.count<=0 {
+            return;
+        }
         pointsArray.removeLast();
         self .setNeedsDisplay();
     }
